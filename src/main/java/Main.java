@@ -34,70 +34,51 @@ images => vmm, ahv
 
 Implement a fuction to convert input string to a hash map then return the map. The key is a string and value is an array with 2 elements.
 */
-import java.util.*;
+import java.util.HashMap;
 
 public class Main{
 
-  public Map getHashMap(String[] input) {
-    //create a Map
-    Map<String, String[]> map = new HashMap<>();
-    String previousKey = "";
+  HashMap<String, String[]> getHashMap(String[] input) {
+
+    HashMap<String, String[]> map = new HashMap<>(); //Creating an empty Map to store the result
+    String previousKey = "";                        //String to store previous key
 
     for(String temp: input) {
-      //Get each value from the input and split using ","
+      //Split input using delimiter ","
       String[] tokens = temp.split(",");
+      int tokenLength = tokens.length;
+      String key;
+
+      //Getting key value
+      //if key starts with "/" and the string after "/"
+      if(tokens[tokenLength-1].startsWith("/")) {
+        key = tokens[tokenLength-1].split("/")[1];
+      }
+      //else use string before "/"
+      else {
+        key = tokens[tokenLength-1].split("/")[0];
+      }
+
+      //Getting values
       String[] values = new String[input.length];
-      //split the last token to get key value
-      String key = "";
-      //if it starts with a / and use keyToken[1]
-      if(tokens[2].startsWith("/")) {
-        key = tokens[2].split("/")[1];
-//        System.out.println(key);
-      }
-      //else use keyToken[0]
-      else
-      {
-        key = tokens[2].split("/")[0];
-//        System.out.println(key);
-      }
 
-      if(!tokens[0].equals("") && !tokens[1].equals("")) {
-        //if tokens are not empty
-        values[0] = tokens[0];
-//           System.out.println(values[0]);
-        values[1] = tokens[1];
-//           System.out.println(values[1]);
-      }
+      for(int i=0; i<tokenLength-1; i++) {
 
-      // if either one of them are empty, get the previous values from map and use them as values to this key
-      if (tokens[0].equals("") && !tokens[1].equals("")) {
-//        System.out.println("else");
-//        System.out.println(previousKey);
-        values[0] = map.get(previousKey)[0];
-        values[1] = tokens[1];
+        //if token is empty, get previously used token from the map
+        if(tokens[i].equals("")) {
+          values[i] = map.get(previousKey)[i];
+        }
+        else {
+          values[i] = tokens[i];
+        }
       }
-      if (!tokens[0].equals("") && tokens[1].equals("")) {
-        values[0] = tokens[0];
-        values[1] = map.get(previousKey)[1];
-//        System.out.println(values1[0]);
-//        System.out.println(values1[1]);
-      }
-      if (tokens[0].equals("") && tokens[1].equals("")) {
-        values[0] = map.get(previousKey)[0];
-        values[1] = map.get(previousKey)[1];
-//        System.out.println(values1[0]);
-//        System.out.println(values1[1]);
-      }
-
       previousKey = key;
-
       map.put(key, values);
     }
     return map;
   }
 
-
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     String[] input = {
         "core,default,/version",
         ",,categories/list",
@@ -108,9 +89,8 @@ public class Main{
         ",ahv,/images/list"
     };
     Main mainOutput = new Main();
-    Map<String, String[]> map = mainOutput.getHashMap(input);
-    for (String key : map.keySet())
-    {
+    HashMap<String, String[]> map = mainOutput.getHashMap(input);
+    for (String key : map.keySet()) {
       String[] values = map.get(key);
       System.out.println(key+ " => [" + values[0]+","+values[1]+"]");
     }
