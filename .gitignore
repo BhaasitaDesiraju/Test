@@ -1,5 +1,5 @@
 # ignore IntelliJ
-*.xml
+
 .idea
 target/
 
