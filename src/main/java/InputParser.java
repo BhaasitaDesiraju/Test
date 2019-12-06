@@ -35,11 +35,21 @@ images => vmm, ahv
 Implement a fuction to convert input string to a hash map then return the map. The key is a string and value is an array with 2 elements.
 */
 import java.util.HashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class Main{
+class InputParser{
 
-  HashMap<String, String[]> getHashMap(String[] input) {
+  private static final Logger LOGGER = LogManager.getLogger(InputParser.class.getName());
 
+  HashMap<String, String[]> getHashMap(String[] input) throws InvalidInputException {
+    //validate input
+    if(input == null) {
+      LOGGER.error("Invalid Input");
+      throw new NullPointerException("Invalid input");
+    }
+
+    LOGGER.info("Converting input string to HashMap");
     HashMap<String, String[]> map = new HashMap<>(); //Creating an empty Map to store the result
     String previousKey = "";                        //String to store previous key
 
@@ -49,7 +59,11 @@ public class Main{
       int tokenLength = tokens.length;
       String key;
 
-      //Getting key value
+      if(tokenLength<= 1) {
+        throw new InvalidInputException("Invalid key error");
+      }
+
+      LOGGER.debug("Retrieving Key");
       //if key starts with "/" and the string after "/"
       if(tokens[tokenLength-1].startsWith("/")) {
         key = tokens[tokenLength-1].split("/")[1];
@@ -59,7 +73,7 @@ public class Main{
         key = tokens[tokenLength-1].split("/")[0];
       }
 
-      //Getting values
+      LOGGER.debug("Retrieving Values");
       String[] values = new String[input.length];
 
       for(int i=0; i<tokenLength-1; i++) {
@@ -73,26 +87,9 @@ public class Main{
         }
       }
       previousKey = key;
+      LOGGER.debug("Updating map");
       map.put(key, values);
     }
     return map;
-  }
-
-  public static void main(String[] args) {
-    String[] input = {
-        "core,default,/version",
-        ",,categories/list",
-        ",,categories/query",
-        "vmm,default,/vms/list",
-        ",,/vms/vm_disk",
-        ",ahv,/images/list",
-        ",ahv,/images/list"
-    };
-    Main mainOutput = new Main();
-    HashMap<String, String[]> map = mainOutput.getHashMap(input);
-    for (String key : map.keySet()) {
-      String[] values = map.get(key);
-      System.out.println(key+ " => [" + values[0]+","+values[1]+"]");
-    }
   }
 }

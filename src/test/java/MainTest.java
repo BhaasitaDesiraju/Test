@@ -11,8 +11,16 @@ public class MainTest {
       ",c,/q",
       "d,,r/s"
   };
-  private Main mainOutput = new Main();
-  private HashMap<String, String[]> map = mainOutput.getHashMap(input);
+  private InputParser mainOutput = new InputParser();
+  private HashMap<String, String[]> map;
+  {
+    try {
+      map = mainOutput.getHashMap(input);
+    }
+    catch (InvalidInputException e) {
+      e.printStackTrace();
+    }
+  }
 
   @Test
   public void keyParserCheck() {
@@ -60,5 +68,51 @@ public class MainTest {
     String[] values = map.get(key);
     Assert.assertEquals(values[0], result[0]);
     Assert.assertEquals(values[1], result[1]);
+  }
+
+  @Test (expectedExceptions = {NullPointerException.class})
+  public void inputMismatchError() throws InvalidInputException {
+    String[] sampleInput = new String[10];
+    HashMap<String, String[]> sampleMap = mainOutput.getHashMap(sampleInput);
+    Assert.assertNull(sampleMap);
+  }
+
+  @Test (expectedExceptions = {InvalidInputException.class})
+  public void invalidKeyError() throws InvalidInputException {
+    String[] sampleInput = {
+        "a,b,/x",
+        ",,",
+        ",c,/q",
+        "d,,r/s"
+    };
+    HashMap<String, String[]> sampleMap = mainOutput.getHashMap(sampleInput);
+    Assert.assertNull(sampleMap);
+  }
+
+  @Test
+  public void validateOutput() throws InvalidInputException {
+    String[] inputString = {
+        "core,default,/version",
+        ",,categories/list",
+        ",,categories/query",
+        "vmm,default,/vms/list",
+        ",,/vms/vm_disk",
+        ",ahv,/images/list",
+        ",ahv,/images/list"
+    };
+    HashMap<String, String[]> sampleMap = mainOutput.getHashMap(inputString);
+    HashMap<String, String[]> outputMap = new HashMap<>();
+    outputMap.put("images", new String[]{"vmm", "ahv"});
+    outputMap.put("categories", new String[]{"core", "default"});
+    outputMap.put("version", new String[]{"core", "default"});
+    outputMap.put("vms", new String[]{"vmm", "default"});
+
+    Assert.assertEquals(sampleMap.keySet(), outputMap.keySet());
+    for (String key : sampleMap.keySet()) {
+      String[] resultValues = sampleMap.get(key);
+      String[] outputValues = outputMap.get(key);
+      Assert.assertEquals(resultValues[0], outputValues[0]);
+      Assert.assertEquals(resultValues[1], outputValues[1]);
+    }
   }
 }
